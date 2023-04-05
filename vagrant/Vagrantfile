@@ -1,34 +1,20 @@
 Vagrant.configure("2") do |config|
 
-  # Define the first server
-  config.vm.define "server1" do |server1|
-    server1.vm.box = "ubuntu/jammy64"
-    server1.vm.hostname = "ubuntu-1"
-    server1.vm.network "private_network", ip: "192.168.56.11"
-    server1.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
+  SERVER_COUNT = 3
+  SERVER_BOX = "ubuntu/jammy64"
+  SERVER_USERNAME = `whoami` 
+  SERVER_HOSTNAME_PREFIX = "vm-ubuntu-"
+  SERVER_IP_PREFIX = "192.168.56."
+
+  (1..SERVER_COUNT).each do |i|
+    config.vm.define "server#{i}" do |server|
+      server.vm.box = SERVER_BOX 
+      server.vm.hostname = "#{SERVER_HOSTNAME_PREFIX}#{i}" 
+#      server.ssh.username = SERVER_USERNAME
+      server.vm.network "private_network", ip: "#{SERVER_IP_PREFIX}#{i+10}"
+      server.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+      end
     end
   end
-
-  # Define the second server
-  config.vm.define "server2" do |server2|
-    server2.vm.box = "ubuntu/jammy64"
-    server2.vm.hostname = "ubuntu-2"
-    server2.vm.network "private_network", ip: "192.168.56.12"
-    server2.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
-    end
-  end
-
-  # Define the third server
-  config.vm.define "server3" do |server3|
-    server3.vm.box = "ubuntu/jammy64"
-    server3.vm.hostname = "ubuntu-3"
-    server3.vm.network "private_network", ip: "192.168.56.13"
-    server3.vm.provider "virtualbox" do |vb|
-      vb.memory = "1024"
-    end
-  end
-
 end
-
