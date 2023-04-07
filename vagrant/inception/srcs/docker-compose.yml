@@ -1,0 +1,78 @@
+version: '3.0'
+
+services:
+  nginx:
+    build: ./requirements/nginx/
+    container_name: nginx
+    depends_on:
+      - wordpress
+    image: nginx
+    networks:
+      - nginx_net
+    ports:
+      - "443:443"
+    restart: always
+    volumes:
+      - wp-data:/var/www/wordpress/
+
+  wordpress:
+    env_file: .env
+    build: ./requirements/wordpress/
+    container_name: wordpress
+    depends_on:
+      - mariadb
+    image: wordpress
+    networks:
+      - nginx_net
+      - mariadb_net
+    restart: always
+    volumes:
+      - wp-data:/var/www/wordpress/
+
+  mariadb:
+    env_file: .env
+    build: ./requirements/mariadb/
+    container_name: mariadb
+    image: mariadb
+    networks:
+      - mariadb_net
+    restart: always
+    volumes:
+      - db-data:/var/lib/mysql/
+
+  adminer:
+    build: ./requirements/bonus/adminer
+    container_name: adminer
+    depends_on:
+      - mariadb
+    image: adminer
+    networks:
+      - nginx_net
+      - mariadb_net 
+    restart: always
+    volumes:
+      - wp-data:/var/www/wordpress/
+
+networks:
+  mariadb_net:
+    driver: bridge
+    name: mariadb_net
+  nginx_net:
+    driver: bridge
+    name: nginx_net
+
+volumes:
+  wp-data:
+    driver: local
+    driver_opts:
+      o: 'bind'
+      device: ${VOLUME_PATH}/wordpress
+      type: volume
+    name: wp-data
+  db-data:
+    driver: local
+    driver_opts:
+      o: 'bind'
+      device: ${VOLUME_PATH}/mariadb
+      type: volume
+    name: db-data
