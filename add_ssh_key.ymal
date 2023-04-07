@@ -1,0 +1,9 @@
+- hosts: remote_system
+  gather_facts: no
+  tasks:
+    - name: Add public SSH key to authorized_keys file
+      authorized_key:
+        user: cjung-mo 
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}" # Path to your public SSH key
+        state: present
+
