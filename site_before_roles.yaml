@@ -1,0 +1,81 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: update repo cache (ubuntu)
+    tags: always
+    apt:
+      update_cache: yes
+    changed_when: false
+    when: ansible_distribution == "ubuntu"
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGrozyklo1cJxRnpv71CsBqVnjJc9/+BP0vWpOVNiG05 ansible"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+
+  - name: install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_9.12.28_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 755
+      owner: root
+      group: root
+
+- hosts: web_servers
+  become: true
+  tasks:
+
+  - name: install apache and php for ubuntu server
+    tags: apache2, apache, ubuntu
+    apt:
+      name: 
+        - apache2
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "ubuntu"
+
+  - name: copy default html file for site
+    tags: apache, apache2, httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+     
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install mariadb package (ubuntu)
+    tags: db, mariadb, ubuntu
+    apt:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "ubuntu"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    tags: samba
+    package:
+      name: samba
+      state: latest
+
